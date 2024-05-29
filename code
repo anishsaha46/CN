@@ -1,0 +1,206 @@
+Lab session 05
+
+SERVER SIDE
+import java.net.*;
+import java.io.*;
+public class TCPServer {
+ public static void main(String args[]) throws Exception {
+ ServerSocket ss = new ServerSocket(5689);
+ System.out.println("Waiting for client to connect...");
+ Socket s = ss.accept();
+ System.out.println("Client Connected !!!");
+ InputStreamReader isr = new InputStreamReader(s.getInputStream());
+ BufferedReader br = new BufferedReader(isr);
+ String str = br.readLine();
+ System.out.println("Client: " + str);
+ BufferedReader serverReader = new BufferedReader(new InputStreamReader(System.in));
+ System.out.print("Enter a response to client: ");
+ String response = serverReader.readLine();
+ PrintWriter pw = new PrintWriter(s.getOutputStream());
+ pw.println(response);
+ pw.flush();
+ // Close resources
+ pw.close();
+ br.close();
+ s.close();
+ ss.close();
+ }
+}
+
+CLIENT SIDE:
+import java.net.*;
+import java.io.*;
+import java.util.*;
+public class TCPClient {
+public static void main(String args[]) throws Exception {
+ Socket s = new Socket("localhost", 5689);
+ Scanner sc = new Scanner(System.in);
+ String word = sc.nextLine();
+ PrintWriter pr = new PrintWriter(s.getOutputStream());
+ pr.println(word);
+ pr.flush();
+ InputStreamReader in = new InputStreamReader(s.getInputStream());
+ BufferedReader br = new BufferedReader(in);
+ String str = br.readLine();
+ // I am Client
+ System.out.println("Server: " + str);
+ }
+ }
+
+
+LAB SESSION - 06
+UDPServer
+import java.net.*;
+import java.io.*;
+import java.util.*;
+public class UDPServer
+{
+public static void main (String[] args) throws Exception
+{
+DatagramSocket ds=new DatagramSocket(1889);
+byte data[]=new byte[1024];
+DatagramPacket dp=new DatagramPacket(data, data.length);
+ds.receive(dp);
+String str=new String(dp.getData());
+System.out.print("Value received"+str);
+int num = Integer.parseInt(str.trim());
+int res = num*num;
+byte b[]=String.valueOf(res).getBytes();
+InetAddress IP = InetAddress.getLocalHost();
+DatagramPacket dp1=new DatagramPacket(b,b.length, IP, dp.getPort());
+ds.send(dp1);
+}
+}
+
+UDPClient
+import java.net.*;
+import java.io.*;
+import java.util.*;
+public class UDPClient {
+ public static void main(String[] args) throws Exception {
+ DatagramSocket ds=new DatagramSocket(); Scanner sc=new Scanner(System.in);
+ System.out.print("Which integer will you like to give:");
+ int i=sc.nextInt();
+ byte b[]=String.valueOf(i).getBytes();
+ InetAddress IP=InetAddress.getLocalHost();
+ DatagramPacket dp=new DatagramPacket (b, b. length, IP, 1889);
+ ds.send(dp);
+ byte data[]=new byte[1024];
+ DatagramPacket dp1=new DatagramPacket(data, data.length); ds.receive(dp1);
+ String str=new String(dp1.getData());
+ System.out.println("Number: "+str);
+ }
+}
+
+
+
+EXPERIMENT NO- 07
+SENDER
+import java.io.*;
+import java.net.*;
+import java.util.*;
+public class sender
+{
+public static void main(String args[]) throws Exception
+{
+sender sws=new sender();
+sws.run();
+}
+public void run() throws Exception
+{
+Scanner sc =new Scanner(System.in);
+System.out.println("Enter the number of frames to be sent: ");
+int n=sc.nextInt();
+Socket myskt =new Socket("localhost",9666);
+PrintStream myps=new PrintStream(myskt.getOutputStream());
+for(int i=0;i<=n;)
+{
+if(i==n)
+{
+myps.println("Exit");
+break;
+}
+System.out.println("Frame no."+i+" is sent");
+myps.println(i);
+BufferedReader bf=new BufferedReader(new InputStreamReader(myskt.getInputStream()));
+String ack=bf.readLine();
+if(ack!=null)
+{
+System.out.println("Acknowledgement received from Receiver.");
+i++;
+Thread.sleep(3000);
+}
+else
+{
+myps.println(i);
+}
+}
+}
+}
+
+RECIEVER
+import java.io.*;
+import java.net.*;
+import java.util.*;
+public class reciever
+{
+public static void main(String args[]) throws Exception
+{
+reciever swr=new reciever();
+swr.run();
+}
+public void run() throws Exception
+{
+String temp="Any Message",str="Exit";
+ServerSocket myss=new ServerSocket(9666);
+Socket ss_accept=myss.accept();
+BufferedReader ss_bf=new BufferedReader(new
+InputStreamReader(ss_accept.getInputStream()));
+PrintStream myps=new PrintStream(ss_accept.getOutputStream());
+while(temp.compareTo(str)!=0)
+{
+Thread.sleep(1000);
+temp=ss_bf.readLine();
+if(temp.compareTo(str)==0)
+{
+break;
+}
+System.out.println("Frame "+temp+" was received.");
+Thread.sleep(500);
+myps.println("Received");
+}
+System.out.println("RECEPTION OF ALL FRAMES SUCCESSFULL.");
+}
+}
+
+
+UDP Multicast Program
+Sender
+import java.net.*;
+import java.io.*;
+public class Sender {
+public static void main(String[] args) throws Exception {
+InetAddress group = InetAddress.getByName("225.2.2.2");
+MulticastSocket ms = new MulticastSocket();
+String msg ="UDP Multicasting";
+DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(),group,2300);
+ms.send(packet);
+ms.close();
+}
+}
+Client
+import java.net.*;
+import java.io.*;
+public class Receiver {
+public static void main(String[] args) throws Exception {
+InetAddress group = InetAddress.getByName("225.2.2.2");
+MulticastSocket ms = new MulticastSocket(2300);
+ms.joinGroup(group);
+byte[] data = new byte[1024];
+DatagramPacket packet = new DatagramPacket(data, data.length);
+ms.receive(packet);
+System.out.println(new String(data));
+ms.close();
+System.out.println("Socket Closed");
+}
+}
